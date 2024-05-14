@@ -1,0 +1,1 @@
+App for getting Shayari of your favourite Poet or Topic by AI
