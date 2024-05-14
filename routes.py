@@ -2,7 +2,12 @@ from flask import jsonify, request
 
 # from helpers import some_helper_function
 from AI_Models.groqAI import groqAI
-from AI_Models.chatgptAI import get_poetry_by_poet_and_poem_name, get_poetry_by_topic, get_poetry_by_category, ai_conversation_with_poets
+from AI_Models.chatgptAI import (
+    get_poetry_by_poet_and_poem_name,
+    get_poetry_by_topic,
+    get_poetry_by_category,
+    ai_conversation_with_poets,
+)
 import threading
 import re
 import time
@@ -15,11 +20,10 @@ def setup_routes(app):
     def index():
         return "Hello, world!"
 
-    #Groq API Testing
+    # Groq API Testing
     @app.route("/urdu-shayari/ai/groq")
     def groq_AI():
         return jsonify({"message": groqAI()})
-
 
     # Urdu Shayari APIs using ChatGPT
     @app.route("/urdu-shayari/ai/get_poetry_by_poet_and_poem_name", methods=["GET"])
@@ -50,7 +54,10 @@ def setup_routes(app):
         print("Acquiring a Semaphore")
         semaphores.acquire()
         event = threading.Event()
-        t = threading.Thread(target=get_poetry_by_poet_and_poem_name, args=(app, additional_data, return_data, event))
+        t = threading.Thread(
+            target=get_poetry_by_poet_and_poem_name,
+            args=(app, additional_data, return_data, event),
+        )
         t.start()
         t.join()
 
@@ -62,7 +69,7 @@ def setup_routes(app):
         semaphores.release()
 
         return return_data["response"]
-    
+
     @app.route("/urdu-shayari/ai/get_poetry_by_topic", methods=["GET"])
     def poetry_by_topic():
         print("CHat GPT AI funtion to get_poetry_by_topic called")
@@ -70,10 +77,7 @@ def setup_routes(app):
         for key, value in request.args.items():
             query_params[key] = value
 
-        if (
-            not query_params
-            or not query_params["poetry_topic"]
-        ):
+        if not query_params or not query_params["poetry_topic"]:
             print("--------Parameters missing--------")
             return (
                 jsonify(
@@ -90,7 +94,9 @@ def setup_routes(app):
         print("Acquiring a Semaphore")
         semaphores.acquire()
 
-        t = threading.Thread(target=get_poetry_by_topic, args=(app, additional_data, return_data))
+        t = threading.Thread(
+            target=get_poetry_by_topic, args=(app, additional_data, return_data)
+        )
         t.start()
         t.join()
 
@@ -102,7 +108,7 @@ def setup_routes(app):
         semaphores.release()
 
         return return_data["response"]
-    
+
     @app.route("/urdu-shayari/ai/get_poetry_by_category", methods=["GET"])
     def poetry_by_category():
         print("CHat GPT AI funtion to get_poetry_by_category called")
@@ -110,10 +116,7 @@ def setup_routes(app):
         for key, value in request.args.items():
             query_params[key] = value
 
-        if (
-            not query_params
-            or not query_params["poetry_category"]
-        ):
+        if not query_params or not query_params["poetry_category"]:
             print("--------Parameters missing--------")
             return (
                 jsonify(
@@ -130,7 +133,9 @@ def setup_routes(app):
         print("Acquiring a Semaphore")
         semaphores.acquire()
 
-        t = threading.Thread(target=get_poetry_by_category, args=(app, additional_data, return_data))
+        t = threading.Thread(
+            target=get_poetry_by_category, args=(app, additional_data, return_data)
+        )
         t.start()
         t.join()
 
@@ -142,32 +147,24 @@ def setup_routes(app):
         semaphores.release()
 
         return return_data["response"]
-    
+
     @app.route("/urdu-shayari/ai/ai_conversation_with_poets", methods=["POST"])
     def ai_conversation():
         print("CHat GPT AI funtion to ai_conversation_with_poets called")
 
         # reading body parameters
         data = request.json
-        print('<----------------------------------------->',data)
-        #Process the recieved data
+        print("<----------------------------------------->", data)
+        # Process the recieved data
         if data is None:
-            print('-------------Prompt Missing------------')
-            return(
-                jsonify(
-                    {"message": "Bad Request, no prompt found"}
-                ),
-                400
-            )
-        
+            print("-------------Prompt Missing------------")
+            return (jsonify({"message": "Bad Request, no prompt found"}), 400)
+
         query_params = {}
         for key, value in request.args.items():
             query_params[key] = value
 
-        if (
-            not query_params
-            or not query_params["poet_name"]
-        ):
+        if not query_params or not query_params["poet_name"]:
             print("--------Parameters missing--------")
             return (
                 jsonify(
@@ -176,19 +173,21 @@ def setup_routes(app):
                 400,
             )
 
-        print("Prompt by User===>", data.get('prompt'))
+        print("Prompt by User===>", data.get("prompt"))
         print("Poet Name===>", query_params["poet_name"])
         return_data = {}
         additional_data = {
-            'prompt': data.get('prompt'),
-            'poet_name':query_params["poet_name"]
+            "prompt": data.get("prompt"),
+            "poet_name": query_params["poet_name"],
         }
 
         # Acquire Semaphore
         print("Acquiring a Semaphore")
         semaphores.acquire()
 
-        t = threading.Thread(target=ai_conversation_with_poets, args=(app, additional_data, return_data))
+        t = threading.Thread(
+            target=ai_conversation_with_poets, args=(app, additional_data, return_data)
+        )
         t.start()
         t.join()
 

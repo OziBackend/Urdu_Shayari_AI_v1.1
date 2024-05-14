@@ -1,12 +1,16 @@
 # key=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
 
 import os
-os.environ["GROQ_API_KEY"] = "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"  # Replace with your actual key
+
+os.environ["GROQ_API_KEY"] = (
+    "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"  # Replace with your actual key
+)
 from groq import Groq
 
 client = Groq(
     api_key=os.environ.get("GROQ_API_KEY"),
 )
+
 
 def generate_prompt():
     chat_completion = client.chat.completions.create(
@@ -27,4 +31,4 @@ def generate_prompt():
 
 def groqAI():
     chat_completion = generate_prompt()
-    return(chat_completion.choices[0].message.content)
+    return chat_completion.choices[0].message.content
