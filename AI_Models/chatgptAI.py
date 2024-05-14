@@ -1,5 +1,6 @@
 from openai import OpenAI
 from flask import jsonify, Flask
+from Keys.authKeys import keys
 import os
 import re
 import json
@@ -10,6 +11,7 @@ from Data_Values.roles import roles
 
 
 os.environ["OPENAI_API_KEY"] = (
+    keys['openAI']  # Replace with your actual key
 )
 
 client = OpenAI()
