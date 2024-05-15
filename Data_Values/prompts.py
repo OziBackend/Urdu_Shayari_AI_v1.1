@@ -9,7 +9,7 @@ prompts = {
     ['1st stanza of poem3', '2nd stanza of poem3','3rd stanza of poem3',....],
     ......]""",
     # To get poetries or ghazals or rabayi
-    "3": """I want to generate '{{poetry_category}}' in Urdu text. Each Poetry separated by new line. There should be 12 poems or more and each containing 6 or more sentences. Strictly there should be no English. The format should be in following  format:
+    "3": """I want to generate '{{poetry_category}}' in Urdu text. Each Poetry separated by new line. There should be 8 poems or more and each containing 6 or more sentences. Strictly there should be no English. The format should be in following  format:
 
     [['1st stanza of poem1', '2nd stanza of poem1','3rd stanza of poem1',....],
     ['1st stanza of poem2', '2nd stanza of poem2','3rd stanza of poem2',....],

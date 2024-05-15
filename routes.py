@@ -12,7 +12,7 @@ import threading
 import re
 import time
 
-semaphores = threading.Semaphore(5)
+semaphores = threading.Semaphore(30)
 
 
 def setup_routes(app):
@@ -68,7 +68,7 @@ def setup_routes(app):
         print("Releasing a Semaphore")
         semaphores.release()
 
-        if return_data is None:
+        if not return_data:
             return jsonify({"response": [] }), 500
 
         return jsonify(return_data)
@@ -110,7 +110,8 @@ def setup_routes(app):
         print("Releasing a Semaphore")
         semaphores.release()
 
-        if return_data is None:
+        if not return_data:
+            print('No Data returned from AI API')
             return jsonify({"response": [] }), 500
 
         return jsonify(return_data)
@@ -152,7 +153,8 @@ def setup_routes(app):
         print("Releasing a Semaphore")
         semaphores.release()
         
-        if return_data is None:
+        if not return_data:
+            print('No data returned from AI API')
             return jsonify({"response": [] }), 500
 
         return jsonify(return_data)
@@ -207,7 +209,7 @@ def setup_routes(app):
         print("Releasing a Semaphore")
         semaphores.release()
 
-        if return_data is None:
+        if not return_data:
             return jsonify({"response": [] }), 500
 
         return jsonify(return_data)
