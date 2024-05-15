@@ -68,7 +68,10 @@ def setup_routes(app):
         print("Releasing a Semaphore")
         semaphores.release()
 
-        return return_data["response"]
+        if return_data is None:
+            return jsonify({"response": [] }), 500
+
+        return jsonify(return_data)
 
     @app.route("/urdu-shayari/ai/get_poetry_by_topic", methods=["GET"])
     def poetry_by_topic():
@@ -107,7 +110,10 @@ def setup_routes(app):
         print("Releasing a Semaphore")
         semaphores.release()
 
-        return return_data["response"]
+        if return_data is None:
+            return jsonify({"response": [] }), 500
+
+        return jsonify(return_data)
 
     @app.route("/urdu-shayari/ai/get_poetry_by_category", methods=["GET"])
     def poetry_by_category():
@@ -145,8 +151,11 @@ def setup_routes(app):
         # Release Semaphore
         print("Releasing a Semaphore")
         semaphores.release()
+        
+        if return_data is None:
+            return jsonify({"response": [] }), 500
 
-        return return_data["response"]
+        return jsonify(return_data)
 
     @app.route("/urdu-shayari/ai/ai_conversation_with_poets", methods=["POST"])
     def ai_conversation():
@@ -198,4 +207,7 @@ def setup_routes(app):
         print("Releasing a Semaphore")
         semaphores.release()
 
-        return return_data["response"]
+        if return_data is None:
+            return jsonify({"response": [] }), 500
+
+        return jsonify(return_data)
