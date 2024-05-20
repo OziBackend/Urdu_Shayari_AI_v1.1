@@ -7,7 +7,8 @@ import json
 
 # laoding prompts file
 from Data_Values.prompts import prompts
-from Data_Values.roles import roles
+# from Data_Values.roles import roles
+from Data_Values.roles import get_role
 
 
 os.environ["OPENAI_API_KEY"] = keys["openAI"]  # Replace with your actual key
@@ -24,7 +25,8 @@ def poetry_by_name_and_poetname(app, data):
     with app.app_context():
         print("Data recieved in thread worker", data)
         prompt_1 = prompts["1"]
-        system_role = roles["1"]
+        # system_role = roles["1"]
+        system_role = get_role(app, "1", "")
         try:
             completion = client.chat.completions.create(
                 model="gpt-3.5-turbo-0125",
@@ -79,7 +81,8 @@ def poetry_by_topic(app, data):
     print("Data recieved in thread worker", data)
     with app.app_context():
         prompt_2 = prompts["2"]
-        system_role = roles["1"]
+        # system_role = roles["1"]
+        system_role = get_role(app, "1", "")
         try:
             completion = client.chat.completions.create(
                 model="gpt-3.5-turbo-0125",
@@ -116,8 +119,11 @@ def get_poetry_by_topic(app, data, returned_data):
         data = acquired_data["completion_data"]
 
         # data is converted to pure JSON format
+
+        data_cleaned = data.replace("\n", ',')
         data_cleaned = data.replace("'", '"')
         print("Formatted Data", data_cleaned)
+        data_cleaned = re.sub(r'[{}\*]', "", data_cleaned)
 
         # data is turned to JSON dict object
         data_dict = json.loads(data_cleaned)
@@ -138,7 +144,8 @@ def poetry_by_category(app, data):
     print("Data recieved in thread worker", data)
     with app.app_context():
         prompt_3 = prompts["3"]
-        system_role = roles["1"]
+        # system_role = roles["1"]
+        system_role = get_role(app, "1", "")
         try:
             completion = client.chat.completions.create(
                 model="gpt-3.5-turbo-0125",
@@ -179,6 +186,7 @@ def get_poetry_by_category(app, data, returned_data):
         # data is converted to pure JSON format
         data_cleaned = data.replace("'", '"')
         print("Formatted Data", data_cleaned)
+        data_cleaned = re.sub(r'[{}\*]', "", data_cleaned)
 
         # data is turned to JSON dict object
         data_dict = json.loads(data_cleaned)
@@ -199,14 +207,16 @@ def ai_conversation(app, data):
     print("Data recieved in thread worker", data)
     with app.app_context():
         prompt = data["prompt"]
-        system_role = roles["2"]
+        # system_role = roles["2"]
+        system_role = get_role(app, "2", data["poet_name"]) # rename 'data["poet_name"]' to 'data["poet_name"]'
+        print(f"{system_role=}")
         try:
             completion = client.chat.completions.create(
                 model="gpt-3.5-turbo-0125",
                 messages=[
                     {
                         "role": "system",
-                        "content": system_role.format(poet_name=data["poet_name"]),
+                        "content": system_role,
                     },
                     {
                         "role": "user",
