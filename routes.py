@@ -12,6 +12,10 @@ import threading
 import re
 import time
 
+from Extra_Modules.logging import get_logger
+#Get configured logger
+logger = get_logger()
+
 semaphores = threading.Semaphore(30)
 
 
@@ -44,9 +48,8 @@ def setup_routes(app):
                 ),
                 400,
             )
+        logger.info(f"Calling API 'get_poetry_by_poet_and_poem_name' for {query_params["poet_name"]} and {query_params["poem_name"]}")
 
-        print("Query Params===>", query_params)
-        print("CHat GPT AI funtion called")
         return_data = {}
         additional_data = query_params
 
@@ -56,7 +59,7 @@ def setup_routes(app):
         event = threading.Event()
         t = threading.Thread(
             target=get_poetry_by_poet_and_poem_name,
-            args=(app, additional_data, return_data, event),
+            args=(app, additional_data, return_data, event, logger),
         )
         t.start()
         t.join()
@@ -69,7 +72,7 @@ def setup_routes(app):
         semaphores.release()
 
         if not return_data:
-            return jsonify({"response": [] }), 500
+            return jsonify({"response": [] })
 
         return jsonify(return_data)
 
@@ -81,6 +84,7 @@ def setup_routes(app):
             query_params[key] = value
 
         if not query_params or not query_params["poetry_topic"]:
+            logger.critical("--------Parameters missing--------")
             print("--------Parameters missing--------")
             return (
                 jsonify(
@@ -88,29 +92,31 @@ def setup_routes(app):
                 ),
                 400,
             )
+        logger.info(f"Calling API 'get_poetry_by_topic' for {query_params["poetry_topic"]}")
 
-        print("Query Params===>", query_params)
+        # print("Query Params===>", query_params)
         return_data = {}
         additional_data = query_params
 
         # Acquire Semaphore
-        print("Acquiring a Semaphore")
+        print("--Acquiring a Semaphore--")
         semaphores.acquire()
 
         t = threading.Thread(
-            target=get_poetry_by_topic, args=(app, additional_data, return_data)
+            target=get_poetry_by_topic, args=(app, additional_data, return_data, logger)
         )
         t.start()
         t.join()
 
         # Processing on response
-        print(return_data)
+        # print(return_data)
 
         # Release Semaphore
         print("Releasing a Semaphore")
         semaphores.release()
 
         if not return_data:
+            logger.error('No Data returned from AI API')
             print('No Data returned from AI API')
             return jsonify({"response": [] }), 500
 
@@ -132,7 +138,8 @@ def setup_routes(app):
                 400,
             )
 
-        print("Query Params===>", query_params)
+        logger.info(f"Calling API 'get_poetry_by_category' for {query_params["poetry_category"]}")
+
         return_data = {}
         additional_data = query_params
 
@@ -141,7 +148,7 @@ def setup_routes(app):
         semaphores.acquire()
 
         t = threading.Thread(
-            target=get_poetry_by_category, args=(app, additional_data, return_data)
+            target=get_poetry_by_category, args=(app, additional_data, return_data, logger)
         )
         t.start()
         t.join()
@@ -155,7 +162,7 @@ def setup_routes(app):
         
         if not return_data:
             print('No data returned from AI API')
-            return jsonify({"response": [] }), 500
+            return jsonify({"response": [] })
 
         return jsonify(return_data)
 
@@ -183,9 +190,10 @@ def setup_routes(app):
                 ),
                 400,
             )
+        
+        logger.info(f"Calling API 'ai_conversation' for {query_params["poet_name"]}")
+        logger.info(f"Calling API 'ai_conversation' with prompt = {data.get("prompt")}")
 
-        print("Prompt by User===>", data.get("prompt"))
-        print("Poet Name===>", query_params["poet_name"])
         return_data = {}
         additional_data = {
             "prompt": data.get("prompt"),
@@ -197,7 +205,7 @@ def setup_routes(app):
         semaphores.acquire()
 
         t = threading.Thread(
-            target=ai_conversation_with_poets, args=(app, additional_data, return_data)
+            target=ai_conversation_with_poets, args=(app, additional_data, return_data, logger)
         )
         t.start()
         t.join()
@@ -210,6 +218,6 @@ def setup_routes(app):
         semaphores.release()
 
         if not return_data:
-            return jsonify({"response": [] }), 500
+            return jsonify({"response": [] })
 
         return jsonify(return_data)
