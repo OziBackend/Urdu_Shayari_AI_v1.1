@@ -122,14 +122,14 @@ def setup_routes(app):
 
         return jsonify(return_data)
 
-    @app.route("/urdu-shayari/ai/get_poetry_by_category", methods=["GET"])
-    def poetry_by_category():
-        print("CHat GPT AI funtion to get_poetry_by_category called")
+    @app.route("/urdu-shayari/ai/get_poetry_by_type", methods=["GET"])
+    def poetry_by_type():
+        print("CHat GPT AI funtion to get_poetry_by_type called")
         query_params = {}
         for key, value in request.args.items():
             query_params[key] = value
 
-        if not query_params or not query_params["poetry_category"]:
+        if not query_params or not query_params["poetry_type"]:
             print("--------Parameters missing--------")
             return (
                 jsonify(
@@ -138,7 +138,7 @@ def setup_routes(app):
                 400,
             )
 
-        logger.info(f"Calling API 'get_poetry_by_category' for {query_params["poetry_category"]}")
+        logger.info(f"Calling API 'get_poetry_by_type' for {query_params["poetry_type"]}")
 
         return_data = {}
         additional_data = query_params
@@ -148,7 +148,7 @@ def setup_routes(app):
         semaphores.acquire()
 
         t = threading.Thread(
-            target=get_poetry_by_category, args=(app, additional_data, return_data, logger)
+            target=get_poetry_by_type, args=(app, additional_data, return_data, logger)
         )
         t.start()
         t.join()

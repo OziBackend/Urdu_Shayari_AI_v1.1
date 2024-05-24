@@ -83,7 +83,7 @@ def get_poetry_by_poet_and_poem_name(app, data, return_data, event, logger):
         if acquired_data["flag"]:
             # data is found and processed before sending to client
             data = acquired_data["completion_data"]
-            data_cleaned = re.sub(r'[{}\*)(]', "", data_cleaned)
+            data_cleaned = re.sub(r'[{}\*)(]', "", data)
             data_cleaned = re.sub(r',]&', "]", data_cleaned)
             data = data.split(",")
             return_data["response"] = data
@@ -154,14 +154,14 @@ def get_poetry_by_topic(app, data, returned_data, logger):
 
 
 ####################################################################################
-# ==============================Poetry by Category==================================#
+# ===============================Poetry by Type=================================== #
 ####################################################################################
 
 
-def poetry_by_category(app, data, logger):
+def poetry_by_type(app, data, logger):
     with app.app_context():
 
-        prompt = prompts["3"].format(poetry_category=data["poetry_category"])
+        prompt = prompts["3"].format(poetry_type=data["poetry_type"])
         system_role = get_role(app, "1", "")
 
         try:
@@ -175,16 +175,16 @@ def poetry_by_category(app, data, logger):
                 return {"flag": False, "completion_data": ""}
 
         except BaseException as e:
-            logger.error('6... Exception thrown in poetry_by_category function = %s', str(e))
-            print(f"6... In poetry_by_category exception is = {e}")
+            logger.error('6... Exception thrown in poetry_by_type function = %s', str(e))
+            print(f"6... In poetry_by_type exception is = {e}")
             return {"flag": False, "completion_data": ""}
 
 
-def get_poetry_by_category(app, data, returned_data, logger):
+def get_poetry_by_type(app, data, returned_data, logger):
 
     with app.app_context():
         
-        acquired_data = poetry_by_category(app, data, logger)
+        acquired_data = poetry_by_type(app, data, logger)
 
         if acquired_data["flag"]:
             # data is found and processed before sending to client
@@ -203,9 +203,9 @@ def get_poetry_by_category(app, data, returned_data, logger):
                 returned_data["response"] = data_dict
             except BaseException as e:
                 # Exception is thrown while calling ChatGPT Api
-                print(f"7... In def get_poetry_by_category(app, data, returned_data, logger): exception is = {e}")
+                print(f"7... In def get_poetry_by_type(app, data, returned_data, logger): exception is = {e}")
                 logger.error('Error in JSON = %s', str(data_cleaned))
-                logger.error('7... Exception thrown in def get_poetry_by_category(app, data, returned_data, logger): = %s', e)
+                logger.error('7... Exception thrown in def get_poetry_by_type(app, data, returned_data, logger): = %s', e)
                 returned_data["response"] = []
 
         else:
