@@ -5,7 +5,7 @@ from AI_Models.groqAI import groqAI
 from AI_Models.chatgptAI import (
     get_poetry_by_poet_and_poem_name,
     get_poetry_by_topic,
-    get_poetry_by_category,
+    get_poetry_by_type,
     ai_conversation_with_poets,
 )
 import threading
