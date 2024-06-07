@@ -44,6 +44,51 @@ def genAIfunction(system_role, prompt, app, logger):
             print(f"1... In GenAIfunction exception is = {e}")
             return {"flag": False, "completion_data": ""}
 
+
+def genAIfunctionStream(system_role, prompt, app, logger):
+    with app.app_context():
+        try:
+            stream = client.chat.completions.create(
+                model="gpt-3.5-turbo-0125",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_role,
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
+                stream=True
+            )
+            sentence=''
+            for chunk in stream:
+                data = chunk.choices[0].delta.content
+
+                if data is None:
+                    yield sentence
+                if data is not None:
+                    print(f'Data: {data}')
+                    if ']' not in data:
+                        sentence += data
+                    else:
+                        data = data.replace(']','')
+                        print('replaced data====>', data)
+                        sentence += data
+                        sentence = sentence.replace('\n','')
+                        sentence = sentence.replace('[','')
+                        yield sentence
+
+                        if sentence != "":
+                            yield '\n'
+                        sentence=''
+
+        except BaseException as e:
+            logger.error("1... Exception thrown in GenAIfunction = %s", str(e))
+            print(f"1... In GenAIfunction exception is = {e}")
+            yield ""
+
 ####################################################################################
 # =========================Poetry by Poet and Poem Name============================#
 ####################################################################################
@@ -94,7 +139,7 @@ def get_poetry_by_poet_and_poem_name(app, data, return_data, event, logger):
 
 
 ####################################################################################
-# ================================Poetry by Topic===================================#
+# ================================Poetry by Topic==================================#
 ####################################################################################
 
 
@@ -129,8 +174,8 @@ def get_poetry_by_topic(app, data, returned_data, logger):
             data = acquired_data["completion_data"]
             data_cleaned = data.replace("\n", ',')
             data_cleaned = data.replace("'", '"')
-            data_cleaned = re.sub(r'[{}\*)(]', "", data_cleaned)
-            data_cleaned = re.sub(r',]&', "]", data_cleaned)
+            data_cleaned = re.sub(r'[{}\*)(];', "", data_cleaned)
+            data_cleaned = re.sub(r',]$', "]", data_cleaned)
 
             try:
                 # data is turned to JSON dict object
@@ -192,7 +237,7 @@ def get_poetry_by_type(app, data, returned_data, logger):
             data_cleaned = data.replace("\n", ',')
             data_cleaned = data.replace("'", '"')
             data_cleaned = re.sub(r'[{}\*)(]', "", data_cleaned)
-            data_cleaned = re.sub(r',]&', "]", data_cleaned)
+            data_cleaned = re.sub(r',]$', "]", data_cleaned)
 
             try:
                 # data is turned to JSON dict object
@@ -215,7 +260,7 @@ def get_poetry_by_type(app, data, returned_data, logger):
 
 
 ####################################################################################
-# ==========================AI Conversations with Poets=============================#
+# ==========================AI Conversations with Poets============================#
 ####################################################################################
 
 
@@ -224,7 +269,13 @@ def ai_conversation(app, data, logger):
     with app.app_context():
 
         prompt = data["prompt"]
-        system_role = get_role(app, "2", data["poet_name"]) # rename 'data["poet_name"]' to 'data["poet_name"]'
+        number =''
+        if data['poet_name'] == 'Urdu Scholar':
+            number ='3'
+        else:
+            number ='2'
+        system_role = get_role(app, number, data["poet_name"])
+        
         
         try:
             AI_data = genAIfunction(system_role, prompt, app, logger)
@@ -256,3 +307,86 @@ def ai_conversation_with_poets(app, data, returned_data, logger):
             # data not found, exception was thrown, blank array is returned to client
             logger.error('9... Empty Response from API: []')
             returned_data["response"] = []
+
+####################################################################################
+####################################################################################
+##############             Streaming Poetry by Topic                  ##############
+####################################################################################
+####################################################################################
+
+#Stream by Topic
+def stream_poetry_by_topic(app, data, logger):
+    print('====>>In stream_poetry_by_topic function')
+    
+    # Loading Prompt
+    prompt = prompts["4"].format(poetry_topic=data["poetry_topic"])
+    # Loading Role
+    system_role = get_role(app, "1", "")
+    
+    print('====>>In stream_poetry_by_topic function')
+    return genAIfunctionStream(system_role, prompt, app, logger)
+
+#Stream by Type
+def stream_poetry_by_type(app, data, logger):
+    print('====>>In stream_poetry_by_type function')
+    
+    # Loading Prompt
+    prompt = prompts["5"].format(poetry_type=data["poetry_type"])
+    # Loading Role
+    system_role = get_role(app, "1", "")
+    
+    print('====>>In stream_poetry_by_type function')
+    return genAIfunctionStream(system_role, prompt, app, logger)
+
+
+####################################################################################
+##############                  Streaming Testing                     ##############
+####################################################################################
+def check():
+    print('2')
+    stream = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {
+                "role": "user",
+                "content": """I want to generate  'نظمیں' about 'محبت' in Urdu text. Number of poems should be 4 and each containing 4 sentences or more. Strictly there should be no English text in your response and there should be no useless text other than poems. The format should be in following  format:
+
+                ['1st stanza of poem1', '2nd stanza of poem1','3rd stanza of poem1',....],
+                ['1st stanza of poem2', '2nd stanza of poem2','3rd stanza of poem2',....],
+                ['1st stanza of poem3', '2nd stanza of poem3','3rd stanza of poem3',....],
+                ....""",
+            }
+        ],
+        stream=True,
+    )
+    sentence = ''
+    for chunk in stream:
+        data = chunk.choices[0].delta.content
+        print('Data value: ', data)
+        
+        if data is None:
+            # json_data = json.dumps({"endflag": True})
+            yield sentence
+        if data is not None:
+            print(f'Data: {data}')
+            if ']' not in data:
+                sentence += data
+            else:
+                # print('original data====>', data)
+                data = data.replace(']','')
+                data = data.replace('\n','')
+                print('replaced data====>', data)
+                sentence += data
+                sentence = sentence.replace('[','')
+                if sentence == "":
+                    yield ""
+                else:
+                    yield sentence +'\n'
+                sentence=''
+            # json_data = json.dumps({"data": data, "endflag": False})  # Wrap data in a dictionary and convert to JSON
+            # yield json_data
+
+
+def generateStream():
+    print('1')
+    return check()

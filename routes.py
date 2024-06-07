@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, Response
 
 # from helpers import some_helper_function
 from AI_Models.groqAI import groqAI
@@ -7,6 +7,11 @@ from AI_Models.chatgptAI import (
     get_poetry_by_topic,
     get_poetry_by_type,
     ai_conversation_with_poets,
+
+    generateStream,
+    
+    stream_poetry_by_topic,
+    stream_poetry_by_type
 )
 import threading
 import re
@@ -221,3 +226,61 @@ def setup_routes(app):
             return jsonify({"response": [] })
 
         return jsonify(return_data)
+    
+    #==========================================================================#
+    # Streaming Route: Get poetry by topic
+    #==========================================================================#
+    @app.route("/urdu-shayari/ai/stream_poetry_by_topic", methods=["GET"])
+    def poetry_by_topic_stream():
+        print("Chat GPT AI function to stream_poetry_by_topic called")
+        query_params = {}
+        for key, value in request.args.items():
+            query_params[key] = value
+
+        if not query_params or not query_params.get("poetry_topic"):
+            logger.critical("--------Parameters missing--------")
+            print("--------Parameters missing--------")
+            return (
+                jsonify(
+                    {"message": "Bad Request, no query found or parameters missing"}
+                ),
+                400,
+            )
+        
+        logger.info(f"Calling API 'stream_poetry_by_topic' for {query_params['poetry_topic']}")
+        additional_data = query_params
+
+
+        return Response(stream_poetry_by_topic(app, additional_data, logger), mimetype='application/json')
+
+    @app.route("/urdu-shayari/ai/stream_poetry_by_type", methods=["GET"])
+    def poetry_by_type_stream():
+        print("Chat GPT AI function to stream_poetry_by_type called")
+        query_params = {}
+        for key, value in request.args.items():
+            query_params[key] = value
+
+        if not query_params or not query_params.get("poetry_type"):
+            logger.critical("--------Parameters missing--------")
+            print("--------Parameters missing--------")
+            return (
+                jsonify(
+                    {"message": "Bad Request, no query found or parameters missing"}
+                ),
+                400,
+            )
+        
+        logger.info(f"Calling API 'stream_poetry_by_type' for {query_params['poetry_type']}")
+        additional_data = query_params
+
+
+        return Response(stream_poetry_by_type(app, additional_data, logger), mimetype='application/json')
+
+
+    #==========================================================================#
+    # Testing Routes: Checking
+    #==========================================================================#
+
+    @app.route('/generateTest', methods=['GET'])
+    def func():
+        return Response(generateStream(), content_type='text/plain')
