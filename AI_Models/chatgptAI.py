@@ -66,7 +66,7 @@ def genAIfunctionStream(system_role, prompt, app, logger):
             for chunk in stream:
                 data = chunk.choices[0].delta.content
 
-                if data is None:
+                if data is None and sentence != "":
                     yield sentence
                 if data is not None:
                     print(f'Data: {data}')
@@ -78,15 +78,20 @@ def genAIfunctionStream(system_role, prompt, app, logger):
                         sentence += data
                         sentence = sentence.replace('\n','')
                         sentence = sentence.replace('[','')
-                        yield sentence
 
                         if sentence != "":
+                            # Remove trailing whitespace
+                            sentence = sentence.rstrip()
+                            # Check if the last character is a comma and remove it
+                            if sentence.endswith(','):
+                                sentence = sentence[:-1]
+                            yield '<--'+sentence+'-->'
                             yield '\n'
                         sentence=''
 
         except BaseException as e:
-            logger.error("1... Exception thrown in GenAIfunction = %s", str(e))
-            print(f"1... In GenAIfunction exception is = {e}")
+            logger.error("1... Exception thrown in GenAIfunctionstream = %s", str(e))
+            print(f"1... In GenAIfunctionstream exception is = {e}")
             yield ""
 
 ####################################################################################
